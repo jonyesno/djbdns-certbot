@@ -13,11 +13,15 @@ fail() {
 }
 trap fail ERR
 
-TINYDNS_ROOT=/var/service/tinydns
+: ${TINYDNS_ROOT:=/var/service/tinydns}
 AUTO_DIR=${TINYDNS_ROOT}/auto
 
-DOMAIN=${1:-${CERTBOT_DOMAIN}}
-VALIDATION=${2:-${CERTBOT_VALIDATION:-}}
+DOMAIN=${1:-}
+VALIDATION=${2:-}
+
+if [[ -z "${DOMAIN}" ]] ; then
+  fail "usage: manage-certbot-records domain [ validation ]"
+fi
 
 if [[ ! -d ${AUTO_DIR} ]] ; then
   fail "no ${AUTO_DIR} here, bailing"
