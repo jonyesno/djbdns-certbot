@@ -1,0 +1,32 @@
+#!/usr/local/bin/bash
+set -uo pipefail
+
+trace() {
+  local STAMP
+  STAMP=$( date '+%Y%m%d-%H:%M:%S' )
+  echo "[certbot-webhook] ${STAMP} $*" >&2
+}
+
+fail() {
+  trace "FATAL $*"
+  exit 1
+}
+trap fail ERR
+
+MODE=${1:-}
+DOMAIN=${2:-}
+VALIDATION=${3:-none}
+
+if [[ -z ${MODE} ]] || [[ -z ${DOMAIN} ]] ; then
+  fail "usage: certbot-webhook mode domain [ validation ]"
+fi
+
+ROOT=/var/service/tinydns/root
+
+case ${MODE} in
+  "add")    sudo ${ROOT}/manage-certbot-records "${DOMAIN}" "${VALIDATION}" ;;
+  "remove") sudo ${ROOT}/manage-certbot-records "${DOMAIN}" ;;
+  *) fail "unknown mode"
+esac
+
+sudo ${ROOT}/make-tinydns

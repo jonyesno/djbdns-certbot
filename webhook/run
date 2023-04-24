@@ -1,0 +1,3 @@
+#!/bin/sh
+
+exec chpst -u nobody:nobody /usr/local/sbin/webhook -verbose -hooks /usr/local/var/service/tinydns/etc/hooks.yml 2>&1

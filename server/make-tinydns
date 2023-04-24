@@ -1,0 +1,3 @@
+#!/bin/sh
+cd /var/service/tinydns/root
+make tinydns

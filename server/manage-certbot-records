@@ -1,0 +1,46 @@
+#!/usr/local/bin/bash
+set -uo pipefail
+
+trace() {
+  local STAMP
+  STAMP=$( date '+%Y%m%d-%H:%M:%S' )
+  echo "[manage-certbot-records] ${STAMP} $*" >&2
+}
+
+fail() {
+  trace "FATAL $*"
+  exit 1
+}
+trap fail ERR
+
+TINYDNS_ROOT=/var/service/tinydns
+AUTO_DIR=${TINYDNS_ROOT}/auto
+
+DOMAIN=${1:-${CERTBOT_DOMAIN}}
+VALIDATION=${2:-${CERTBOT_VALIDATION:-}}
+
+if [[ ! -d ${AUTO_DIR} ]] ; then
+  fail "no ${AUTO_DIR} here, bailing"
+fi
+
+FILE=${AUTO_DIR}/${DOMAIN}.certbot
+
+# if we have a VALIDATION, create the file to publish it (`add` mode)
+# if we don't, remove the file it was previously in   (`remove` mode)
+
+if [[ -n "${VALIDATION}" ]] ; then
+  if [[ -f ${FILE} ]] ; then
+    trace "${FILE} already exists, overwriting"
+  fi
+  echo "'_acme-challenge.${DOMAIN}:${VALIDATION}:60" > "${FILE}"
+  cat "${FILE}"
+else
+  if [[ ! -f ${FILE} ]] ; then
+    trace "${FILE} doesn't exist, doing nothing"
+  else
+    trace "removing ${FILE}"
+    rm "${FILE}"
+  fi
+fi
+
+trace "done"

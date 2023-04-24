@@ -1,0 +1,17 @@
+- id: tinydns-certbot
+  execute-command: "/var/service/tinydns/root/certbot-webhook"
+  command-working-directory: "/var/service/tinydns"
+  pass-arguments-to-command:
+  - source: payload
+    name: mode
+  - source: payload
+    name: domain
+  - source: payload
+    name: validation
+  trigger-rule:
+    match:
+      type: payload-hash-sha256
+      secret: must-match-WEBHOOK_SECRET-in-certbot-auth-remote
+      parameter:
+        source: header
+        name: X-Signature

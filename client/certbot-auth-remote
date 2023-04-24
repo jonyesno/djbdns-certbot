@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -uo pipefail
+
+trace() {
+  local STAMP
+  STAMP=$( date '+%Y%m%d-%H:%M:%S' )
+  echo "[certbot-auth-remote] ${STAMP} $*" | logger -t cerbot-auth-remote
+}
+
+fail() {
+  trace "FATAL $*"
+  exit 1
+}
+trap fail ERR
+
+if [[ -z ${CERTBOT_DOMAIN} ]] ; then
+  fail "CERTBOT_DOMAIN is not defined"
+fi
+if [[ -z ${WEBHOOK_HOST} ]] ; then
+  fail "WEBHOOK_HOST is not defined"
+fi
+if [[ -z ${WEBHOOK_SECRET} ]] ; then
+  fail "WEBHOOK_SECRET is not defined"
+fi
+
+
+if [[ -n ${CERTBOT_VALIDATION:-} ]] ; then
+  trace "adding validation for ${CERTBOT_DOMAIN}"
+  curl-with-signature "${WEBHOOK_HOST}"/hooks/tinydns-certbot "${WEBHOOK_SECRET}" mode=add domain="${CERTBOT_DOMAIN}" validation="${CERTBOT_VALIDATION}" 2>&1 | logger -t certbot-auth-remote
+  sleep 10
+else
+  trace "removing validation for ${CERTBOT_DOMAIN}"
+  curl-with-signature "${WEBHOOK_HOST}"/hooks/tinydns-certbot "${WEBHOOK_SECRET}" mode=remove domain="${CERTBOT_DOMAIN}" validation=none 2>&1 | logger -t certbot-auth-remote
+  sleep 10
+fi
+
+exit 0

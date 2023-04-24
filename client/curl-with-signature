@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+require 'openssl'
+
+# curl post with `X-Signature` header to reflect the data payload
+# suitable for calling https://github.com/adnanh/webhook
+
+url = ARGV.shift
+key = ARGV.shift
+
+raise ArgumentError, "usage: curl-with-signature url hmac-key [ key=value ... ]" if url.nil? || key.nil?
+
+payload = ARGV.join("&")
+mac = OpenSSL::HMAC.hexdigest("SHA256", key, payload)
+
+system("curl --silent --header 'X-Signature: sha256=#{mac}' --data '#{payload}' --trace-ascii - #{url}")
