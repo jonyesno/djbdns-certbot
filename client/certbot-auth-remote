@@ -13,13 +13,13 @@ fail() {
 }
 trap fail ERR
 
-if [[ -z ${CERTBOT_DOMAIN} ]] ; then
+if [[ -z ${CERTBOT_DOMAIN:-} ]] ; then
   fail "CERTBOT_DOMAIN is not defined"
 fi
-if [[ -z ${WEBHOOK_HOST} ]] ; then
+if [[ -z ${WEBHOOK_HOST:-} ]] ; then
   fail "WEBHOOK_HOST is not defined"
 fi
-if [[ -z ${WEBHOOK_SECRET} ]] ; then
+if [[ -z ${WEBHOOK_SECRET:-} ]] ; then
   fail "WEBHOOK_SECRET is not defined"
 fi
 
